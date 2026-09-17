@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KGuardAgent · 安全算法中心</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  /* Palette — warm slate with amber accent */
+  --ink:        oklch(18% 0.02 260);
+  --ink-2:      oklch(35% 0.025 255);
+  --ink-3:      oklch(52% 0.02 255);
+  --ink-4:      oklch(68% 0.015 255);
+  --paper:      oklch(98% 0.008 255);
+  --paper-2:    oklch(95% 0.010 255);
+  --paper-3:    oklch(91% 0.012 255);
+  --border:     oklch(86% 0.012 255);
+  --border-2:   oklch(80% 0.014 255);
+
+  /* Accent — deep amber-gold */
+  --accent:     oklch(64% 0.18 62);
+  --accent-dim: oklch(72% 0.14 62);
+  --accent-bg:  oklch(96% 0.04 62);
+
+  /* Layer colors */
+  --c-agent:   oklch(38% 0.14 255);
+  --c-skill:   oklch(42% 0.13 295);
+  --c-tool:    oklch(36% 0.11 170);
+  --c-plugin:  oklch(44% 0.14 35);
+
+  /* Type */
+  --font-display: 'Nunito', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-body:    'Nunito', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+  --sp-9: 96px;
+
+  /* Radius */
+  --r-sm: 4px; --r-md: 8px; --r-lg: 14px; --r-xl: 20px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--sp-8);
+  background: oklch(98% 0.008 255 / 0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: var(--sp-3);
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  color: var(--ink); text-decoration: none; letter-spacing: 0.02em;
+}
+.nav-logo-mark {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nav-logo-mark svg { width: 16px; height: 16px; fill: var(--paper); }
+.nav-links {
+  display: flex; align-items: center; gap: var(--sp-6);
+  list-style: none;
+}
+.nav-links a {
+  font-size: 13px; font-weight: 400; color: var(--ink-3);
+  text-decoration: none; letter-spacing: 0.01em;
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-badge {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  padding: 3px 8px; border-radius: 3px;
+  background: var(--accent-bg); color: var(--accent);
+  border: 1px solid oklch(64% 0.18 62 / 0.3);
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+a.nav-badge:hover {
+  background: oklch(64% 0.18 62 / 0.15);
+  border-color: oklch(64% 0.18 62 / 0.55);
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT HELPERS
+═══════════════════════════════════════════ */
+.container { max-width: 1120px; margin: 0 auto; padding: 0 var(--sp-6); }
+section { padding: var(--sp-9) 0; }
+section:nth-child(even) { background: var(--paper-2); }
+
+.section-label {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: var(--sp-4);
+}
+.section-label::before {
+  content: ''; display: block; width: 20px; height: 1px;
+  background: var(--ink-3);
+}
+
+.section-title {
+  font-family: var(--font-display); font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 600; line-height: 1.28; letter-spacing: -0.008em;
+  color: var(--ink); margin-bottom: var(--sp-4);
+}
+.section-title em { font-style: normal; font-weight: 700; color: var(--accent); }
+
+.section-desc {
+  font-size: 13px; line-height: 1.7; color: var(--ink-2);
+  max-width: 600px;
+}
+
+/* ═══════════════════════════════════════════
+   HERO SECTION
+═══════════════════════════════════════════ */
+#hero {
+  padding-top: calc(56px + var(--sp-9)); padding-bottom: var(--sp-9);
+  background: var(--paper);
+  overflow: hidden; position: relative;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-8);
+  align-items: start;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: var(--sp-5);
+}
+.hero-eyebrow::after {
+  content: ''; flex: 1; height: 1px; min-width: 32px; background: var(--accent-dim);
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3.2vw, 40px);
+  font-weight: 700; line-height: 1.22; letter-spacing: -0.012em;
+  color: var(--ink); margin-bottom: var(--sp-5);
+}
+.hero-title .alt { font-style: normal; font-weight: 500; color: var(--ink-2); }
+.hero-desc {
+  font-size: 13px; line-height: 1.72; color: var(--ink-2);
+  margin-bottom: var(--sp-6);
+}
+.hero-cta-row {
+  display: flex; align-items: center; gap: var(--sp-4);
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: 10px 20px; border-radius: var(--r-md);
+  background: var(--ink); color: var(--paper);
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  text-decoration: none; letter-spacing: 0.01em;
+  transition: background 0.15s, transform 0.12s;
+}
+.btn-primary:hover { background: var(--ink-2); transform: translateY(-1px); }
+.btn-ghost {
+  font-size: 13px; font-weight: 400; color: var(--ink-3);
+  text-decoration: none; letter-spacing: 0.01em;
+  border-bottom: 1px solid var(--border-2);
+  transition: color 0.15s;
+}
+.btn-ghost:hover { color: var(--ink); }
+
+/* Hero 右侧：架构层级图 */
+.hero-diagram {
+  position: relative;
+}
+.arch-stack {
+  display: flex; flex-direction: column; gap: var(--sp-2);
+}
+.arch-layer {
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.arch-layer:hover {
+  transform: translateX(6px);
+}
+.arch-layer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  font-size: 13px; font-weight: 500;
+}
+.arch-layer-name {
+  display: flex; align-items: center; gap: var(--sp-3);
+}
+.arch-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.arch-layer-meta {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--ink-4); letter-spacing: 0.04em;
+}
+.arch-layer-body {
+  padding: 0 20px;
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+              padding 0.25s ease;
+  font-size: 12px; line-height: 1.6; color: var(--ink-3);
+}
+.arch-layer.open .arch-layer-body {
+  max-height: 200px; padding: 10px 20px 16px;
+}
+.arch-layer-expand {
+  font-family: var(--font-mono); font-size: 11px; color: var(--ink-4);
+  transition: transform 0.25s;
+}
+.arch-layer.open .arch-layer-expand { transform: rotate(180deg); }
+
+/* Layer color variants */
+.arch-layer--agent  { border-color: oklch(38% 0.14 255 / 0.3); }
+.arch-layer--agent .arch-layer-header  { background: oklch(38% 0.14 255 / 0.06); }
+.arch-layer--agent  .arch-dot { background: var(--c-agent); }
+.arch-layer--skill  { border-color: oklch(42% 0.13 295 / 0.3); }
+.arch-layer--skill .arch-layer-header  { background: oklch(42% 0.13 295 / 0.06); }
+.arch-layer--skill  .arch-dot { background: var(--c-skill); }
+.arch-layer--tool   { border-color: oklch(36% 0.11 170 / 0.3); }
+.arch-layer--tool .arch-layer-header   { background: oklch(36% 0.11 170 / 0.06); }
+.arch-layer--tool   .arch-dot { background: var(--c-tool); }
+.arch-layer--plugin { border-color: oklch(44% 0.14 35 / 0.3); }
+.arch-layer--plugin .arch-layer-header { background: oklch(44% 0.14 35 / 0.06); }
+.arch-layer--plugin .arch-dot { background: var(--c-plugin); }
+
+.arch-disclosure-note {
+  margin-top: var(--sp-4);
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  background: var(--accent-bg);
+  border-left: 3px solid var(--accent);
+  font-size: 12px; line-height: 1.6; color: var(--ink-2);
+}
+.arch-disclosure-note strong { color: var(--ink); font-weight: 500; }
+
+/* Harness 工程标注 */
+.harness-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--ink-3); letter-spacing: 0.04em;
+}
+.harness-tag::before {
+  content: '';
+  display: inline-block; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--accent);
+}
+
+/* ═══════════════════════════════════════════
+   HARNESS SECTION
+═══════════════════════════════════════════ */
+#harness { background: var(--ink); color: var(--paper); }
+#harness .section-label { color: oklch(70% 0.02 255); }
+#harness .section-label::before { background: oklch(70% 0.02 255); }
+#harness .section-title { color: var(--paper); }
+#harness .section-title em { color: var(--accent-dim); font-style: normal; font-weight: 700; }
+#harness .section-desc { color: oklch(72% 0.018 255); }
+
+.harness-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+  margin-top: var(--sp-7);
+}
+.harness-card {
+  padding: var(--sp-5);
+  border-radius: var(--r-lg);
+  border: 1px solid oklch(30% 0.02 255);
+  background: oklch(22% 0.02 260);
+  transition: border-color 0.2s, background 0.2s;
+}
+.harness-card:hover {
+  border-color: oklch(40% 0.02 255);
+  background: oklch(24% 0.02 260);
+}
+.harness-card-num {
+  font-family: var(--font-display); font-size: 26px; font-weight: 600;
+  color: var(--accent); line-height: 1; margin-bottom: var(--sp-3);
+}
+.harness-card-title {
+  font-size: 14px; font-weight: 500; color: var(--paper);
+  margin-bottom: var(--sp-2);
+}
+.harness-card-desc {
+  font-size: 13px; line-height: 1.65; color: oklch(65% 0.018 255);
+}
+.harness-pipeline {
+  margin-top: var(--sp-7);
+  padding: var(--sp-5) var(--sp-6);
+  border-radius: var(--r-xl);
+  border: 1px solid oklch(30% 0.02 255);
+  background: oklch(20% 0.022 260);
+}
+.harness-pipeline-label {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: oklch(55% 0.018 255);
+  margin-bottom: var(--sp-4);
+}
+.pipeline-flow {
+  display: flex; align-items: center; gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.pipe-node {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 6px 14px; border-radius: 100px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  white-space: nowrap;
+}
+.pipe-node--data   { background: oklch(38% 0.14 255 / 0.2); color: oklch(72% 0.12 255); border: 1px solid oklch(38% 0.14 255 / 0.4); }
+.pipe-node--train  { background: oklch(38% 0.14 220 / 0.2); color: oklch(72% 0.12 220); border: 1px solid oklch(38% 0.14 220 / 0.4); }
+.pipe-node--eval   { background: oklch(42% 0.13 295 / 0.2); color: oklch(72% 0.11 295); border: 1px solid oklch(42% 0.13 295 / 0.4); }
+.pipe-node--perf   { background: oklch(44% 0.14 55 / 0.2);  color: oklch(72% 0.14 55);  border: 1px solid oklch(44% 0.14 55 / 0.4); }
+.pipe-node--deploy { background: oklch(36% 0.11 170 / 0.2); color: oklch(65% 0.11 170); border: 1px solid oklch(36% 0.11 170 / 0.4); }
+.pipe-arrow {
+  color: oklch(45% 0.02 255); font-family: var(--font-mono); font-size: 14px;
+}
+.pipe-feedback {
+  margin-top: var(--sp-3);
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: 12px; color: oklch(55% 0.018 255);
+}
+.pipe-feedback-line {
+  height: 1px; flex: 1; max-width: 120px;
+  background: repeating-linear-gradient(90deg,
+    oklch(45% 0.10 20) 0, oklch(45% 0.10 20) 4px,
+    transparent 4px, transparent 8px);
+}
+
+/* ═══════════════════════════════════════════
+   AGENT SECTION
+═══════════════════════════════════════════ */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--sp-3);
+  margin-top: var(--sp-7);
+}
+.agent-card {
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: var(--paper);
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.agent-card:hover {
+  box-shadow: 0 8px 24px oklch(18% 0.02 260 / 0.08);
+  transform: translateY(-3px);
+}
+.agent-card-head {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.agent-index {
+  font-family: var(--font-display); 
+  font-size: 22px; color: var(--ink-4); line-height: 1; flex-shrink: 0;
+}
+.agent-name { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.2; }
+.agent-role { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.agent-arrow { margin-left: auto; font-size: 16px; color: var(--ink-4); flex-shrink: 0; }
+.agent-body { padding: 14px 16px; }
+.agent-desc { font-size: 12px; line-height: 1.65; color: var(--ink-2); margin-bottom: var(--sp-3); }
+.agent-io {
+  display: flex; align-items: center; gap: var(--sp-1);
+  margin-bottom: var(--sp-3); flex-wrap: wrap;
+}
+.io-item { display: flex; flex-direction: column; gap: 2px; }
+.io-label {
+  font-family: var(--font-mono); font-size: 9px;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-4);
+}
+.io-item code {
+  font-family: var(--font-mono); font-size: 10px;
+  background: var(--paper-2); color: var(--ink-2);
+  padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--border);
+}
+.io-sep { font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); align-self: flex-end; margin-bottom: 4px; }
+.agent-tags { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.tag {
+  font-size: 10px; font-weight: 400; color: var(--ink-3);
+  padding: 2px 7px; border-radius: 100px;
+  border: 1px solid var(--border-2); background: var(--paper-2);
+}
+.tag--warn { color: oklch(44% 0.14 35); border-color: oklch(44% 0.14 35 / 0.4); background: oklch(44% 0.14 35 / 0.06); }
+
+/* Agent color bars */
+.agent-card[data-color="agent"] .agent-card-head { border-top: 3px solid var(--c-agent); }
+.agent-card[data-color="train"] .agent-card-head  { border-top: 3px solid oklch(38% 0.14 220); }
+.agent-card[data-color="eval"]  .agent-card-head  { border-top: 3px solid var(--c-skill); }
+.agent-card[data-color="perf"]  .agent-card-head  { border-top: 3px solid var(--c-plugin); }
+.agent-card[data-color="deploy"] .agent-card-head { border-top: 3px solid var(--c-tool); }
+
+/* ═══════════════════════════════════════════
+   SKILL SECTION
+═══════════════════════════════════════════ */
+.skill-tiers {
+  display: flex; align-items: stretch; gap: 0;
+  margin: var(--sp-7) 0 var(--sp-6);
+  border-radius: var(--r-xl); overflow: hidden;
+  border: 1px solid var(--border);
+}
+.skill-tier {
+  flex: 1; padding: var(--sp-5);
+}
+.skill-tier-sep {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--sp-2); padding: 0 var(--sp-3);
+  background: var(--paper-2);
+  border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+}
+.tier-arrow { font-size: 18px; color: var(--ink-4); }
+.tier-arrow-label { font-size: 10px; color: var(--ink-4); text-align: center; line-height: 1.4; }
+.skill-tier--base     { background: oklch(96% 0.025 255); }
+.skill-tier--standard { background: oklch(96% 0.022 295); }
+.skill-tier--expert   { background: oklch(96% 0.018 260); }
+.tier-badge {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 3px; margin-bottom: var(--sp-3);
+}
+.skill-tier--base     .tier-badge { background: oklch(38% 0.14 255 / 0.12); color: var(--c-agent); }
+.skill-tier--standard .tier-badge { background: oklch(42% 0.13 295 / 0.12); color: var(--c-skill); }
+.skill-tier--expert   .tier-badge { background: oklch(25% 0.02 260 / 0.10); color: var(--ink-2); }
+.tier-title { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: var(--sp-2); }
+.tier-desc  { font-size: 12px; line-height: 1.65; color: var(--ink-2); margin-bottom: var(--sp-3); }
+.tier-owner { font-size: 12px; color: var(--ink-3); }
+
+/* Tabs */
+.skill-agent-tabs { }
+.tab-nav {
+  display: flex; gap: var(--sp-1);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-5); overflow-x: auto;
+}
+.tab-btn {
+  padding: 8px 16px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  color: var(--ink-3); background: none; border: none; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.skill-compare {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+}
+.skill-col {
+  border-radius: var(--r-lg); padding: var(--sp-5);
+  border: 1px solid var(--border);
+}
+.skill-col--base     { background: var(--paper); border-top: 3px solid var(--c-agent); }
+.skill-col--standard { background: var(--paper); border-top: 3px solid var(--c-skill); }
+.skill-col--expert   { background: var(--paper); border-top: 3px solid var(--ink-2); }
+.skill-col-label {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-4); margin-bottom: var(--sp-2);
+}
+.skill-col-name {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  color: var(--ink); margin-bottom: var(--sp-4);
+  padding: 4px 8px; background: var(--paper-2); border-radius: var(--r-sm);
+  border: 1px solid var(--border); display: inline-block;
+}
+.skill-list {
+  list-style: none; margin-bottom: var(--sp-4);
+}
+.skill-list li {
+  font-size: 12px; line-height: 1.65; color: var(--ink-2);
+  padding: 4px 0; border-bottom: 1px solid var(--paper-3);
+  padding-left: 14px; position: relative;
+}
+.skill-list li::before {
+  content: '·'; position: absolute; left: 0; color: var(--ink-4);
+}
+.skill-io-row {
+  display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
+  padding: 8px; border-radius: var(--r-md); background: var(--paper-2);
+}
+.skill-io-in  { font-family: var(--font-mono); font-size: 10px; color: var(--c-agent); }
+.skill-io-out { font-family: var(--font-mono); font-size: 10px; color: var(--c-tool); }
+.skill-io-arr { font-size: 12px; color: var(--ink-4); }
+
+/* ═══════════════════════════════════════════
+   TOOL SECTION
+═══════════════════════════════════════════ */
+.tool-intro-grid {
+  display: block;
+  margin-top: var(--sp-7);
+}
+.tool-principle {
+  padding: var(--sp-5); border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: var(--paper-2);
+}
+.tool-principle-title { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: var(--sp-3); }
+.tool-principle-list { list-style: none; }
+.tool-principle-list li {
+  display: flex; gap: var(--sp-2); align-items: flex-start;
+  font-size: 12px; line-height: 1.65; color: var(--ink-2);
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+}
+.tool-principle-list li:last-child { border-bottom: none; }
+.tool-schema-badge {
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 1px 5px; border-radius: 2px;
+  background: var(--ink); color: var(--paper);
+  flex-shrink: 0; margin-top: 2px;
+}
+
+.tool-table-wrap { overflow-x: auto; }
+.tool-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px;
+}
+.tool-table thead { background: var(--paper-3); }
+.tool-table th {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-3); text-align: left;
+  padding: 10px 14px; border-bottom: 2px solid var(--border-2);
+}
+.tool-table td {
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.tool-table tr:hover td { background: var(--paper-2); }
+.tool-fn {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  color: var(--c-tool);
+}
+.tool-sig {
+  font-family: var(--font-mono); font-size: 10px; color: var(--ink-3);
+  line-height: 1.6;
+}
+.tool-agent-badge {
+  display: inline-block; padding: 2px 7px; border-radius: 100px;
+  font-size: 10px; white-space: nowrap;
+}
+.badge-data   { background: oklch(38% 0.14 255 / 0.10); color: var(--c-agent); border: 1px solid oklch(38% 0.14 255 / 0.3); }
+.badge-train  { background: oklch(38% 0.14 220 / 0.10); color: oklch(38% 0.14 220); border: 1px solid oklch(38% 0.14 220 / 0.3); }
+.badge-eval   { background: oklch(42% 0.13 295 / 0.10); color: var(--c-skill); border: 1px solid oklch(42% 0.13 295 / 0.3); }
+.badge-perf   { background: oklch(44% 0.14 55 / 0.10);  color: oklch(44% 0.14 55);  border: 1px solid oklch(44% 0.14 55 / 0.3); }
+.badge-deploy { background: oklch(36% 0.11 170 / 0.10); color: var(--c-tool); border: 1px solid oklch(36% 0.11 170 / 0.3); }
+
+/* ═══════════════════════════════════════════
+   PLUGIN SECTION
+═══════════════════════════════════════════ */
+#plugins { background: var(--ink); }
+#plugins .section-label { color: oklch(60% 0.02 255); }
+#plugins .section-label::before { background: oklch(60% 0.02 255); }
+#plugins .section-title { color: var(--paper); }
+#plugins .section-title em { color: var(--c-plugin); font-style: normal; font-weight: 700; }
+#plugins .section-desc { color: oklch(65% 0.018 255); }
+
+.plugin-lifecycle {
+  display: flex; align-items: center; gap: var(--sp-3);
+  margin: var(--sp-6) 0;
+}
+.lifecycle-step {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 8px 16px; border-radius: 100px;
+  font-family: var(--font-mono); font-size: 11px;
+}
+.lifecycle-step--exp    { background: oklch(28% 0.06 55 / 0.5); color: oklch(72% 0.12 55); border: 1px solid oklch(44% 0.12 55 / 0.4); }
+.lifecycle-step--stable { background: oklch(22% 0.08 170 / 0.5); color: oklch(65% 0.12 170); border: 1px solid oklch(36% 0.12 170 / 0.4); }
+.lifecycle-step--dep    { background: oklch(25% 0.02 255 / 0.5); color: oklch(50% 0.02 255); border: 1px solid oklch(35% 0.02 255 / 0.4); }
+.lifecycle-arrow { color: oklch(40% 0.02 255); font-size: 14px; }
+
+.plugin-interface-box {
+  padding: var(--sp-5); border-radius: var(--r-lg);
+  border: 1px solid oklch(30% 0.02 255);
+  background: oklch(22% 0.022 260);
+  margin-bottom: var(--sp-6);
+}
+.plugin-interface-title {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: oklch(55% 0.02 255); margin-bottom: var(--sp-3);
+}
+.plugin-interface-code {
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.8;
+  color: oklch(78% 0.03 255);
+}
+.plugin-interface-code .kw  { color: oklch(72% 0.14 55); }
+.plugin-interface-code .fn  { color: oklch(65% 0.14 295); }
+.plugin-interface-code .cm  { color: oklch(48% 0.02 255); font-style: italic; }
+.plugin-interface-code .tp  { color: oklch(65% 0.12 170); }
+
+.plugin-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-4);
+}
+.plugin-card {
+  padding: var(--sp-5); border-radius: var(--r-lg);
+  border: 1px solid oklch(28% 0.02 255);
+  background: oklch(20% 0.022 260);
+  transition: border-color 0.2s;
+}
+.plugin-card:hover { border-color: oklch(36% 0.02 255); }
+.plugin-card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: var(--sp-3);
+}
+.plugin-name {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  color: var(--paper); margin-bottom: 4px;
+}
+.plugin-agent-tag {
+  font-size: 10px; padding: 2px 8px; border-radius: 100px;
+  background: oklch(28% 0.02 255); color: oklch(62% 0.02 255);
+}
+.plugin-lifecycle-tag {
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 8px; border-radius: 3px;
+  background: oklch(28% 0.06 55 / 0.5); color: oklch(70% 0.12 55);
+}
+.plugin-desc {
+  font-size: 12px; line-height: 1.65; color: oklch(58% 0.02 255);
+  margin-bottom: var(--sp-3);
+}
+.plugin-tools-label {
+  font-family: var(--font-mono); font-size: 10px; color: oklch(48% 0.02 255);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--sp-2);
+}
+.plugin-tools-list {
+  display: flex; flex-wrap: wrap; gap: var(--sp-1);
+}
+.plugin-tool-chip {
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 8px; border-radius: 3px;
+  background: oklch(26% 0.04 170 / 0.4); color: oklch(60% 0.10 170);
+  border: 1px solid oklch(36% 0.10 170 / 0.3);
+}
+
+@media (max-width: 900px) {
+  .agent-grid { grid-template-columns: repeat(2, 1fr); }
+  .skill-tiers { flex-direction: column; }
+  .skill-tier-sep { flex-direction: row; padding: var(--sp-2) var(--sp-4); }
+  .skill-compare { grid-template-columns: 1fr; }
+  .plugin-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 540px) {
+  .agent-grid { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer {
+  padding: var(--sp-7) 0;
+  border-top: 1px solid var(--border);
+  background: var(--paper);
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-text {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--ink-4); letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fadeUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+.fade-up-1 { animation-delay: 0.05s; }
+.fade-up-2 { animation-delay: 0.12s; }
+.fade-up-3 { animation-delay: 0.20s; }
+.fade-up-4 { animation-delay: 0.28s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up, .arch-layer, .btn-primary { animation: none; transition: none; }
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .harness-grid { grid-template-columns: 1fr 1fr; }
+  nav { padding: 0 var(--sp-5); }
+  .nav-links { display: none; }
+}
+@media (max-width: 540px) {
+  .harness-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span class="nav-logo-mark">
+      <svg viewBox="0 0 16 16"><path d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM11 9v6M9 11h6"/><rect x="9" y="9" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+    </span>
+    KGuardAgent
+  </a>
+  <ul class="nav-links">
+    <li><a href="#hero">架构总览</a></li>
+    <li><a href="#agents">Agent 层</a></li>
+    <li><a href="#skills">Skill 层</a></li>
+    <li><a href="#tools">Tool 层</a></li>
+    <li><a href="#plugins">Plugin 层</a></li>
+  </ul>
+  <span class="nav-badge">V1 · Alpha</span>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section id="hero">
+<div class="container">
+  <div class="hero-grid">
+    <!-- 左侧文字 -->
+    <div>
+      <p class="hero-eyebrow fade-up">KGuardAgent · 安全算法中心</p>
+      <h1 class="hero-title fade-up fade-up-1">
+        模型生产<br><span class="alt">全流程自动化</span><br>智能体框架
+      </h1>
+      <p class="hero-desc fade-up fade-up-2">
+        从数据生产到模型训练、评估、压测、部署，KGuardAgent 以五个专注领域的 Agent 驱动算法流水线全自动运行。基于<strong>渐进式披露</strong>原则设计，每一层从基础到专业渐次展开，降低认知成本，聚焦核心决策。
+      </p>
+      <div class="hero-cta-row fade-up fade-up-3">
+        <a href="#agents" class="btn-primary">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          探索 Agent 层
+        </a>
+        <a href="#harness" class="btn-ghost">了解工程设计 →</a>
+      </div>
+      <div style="margin-top: var(--sp-6); display: flex; gap: var(--sp-5); flex-wrap: wrap;">
+        <div>
+          <div style="font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--ink); line-height: 1;">5</div>
+          <div style="font-size: 12px; color: var(--ink-3); margin-top: 2px;">专注 Agent</div>
+        </div>
+        <div style="width:1px; background: var(--border);"></div>
+        <div>
+          <div style="font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--ink); line-height: 1;">3</div>
+          <div style="font-size: 12px; color: var(--ink-3); margin-top: 2px;">Skill 层级</div>
+        </div>
+        <div style="width:1px; background: var(--border);"></div>
+        <div>
+          <div style="font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--ink); line-height: 1;">15+</div>
+          <div style="font-size: 12px; color: var(--ink-3); margin-top: 2px;">原子 Tool</div>
+        </div>
+        <div style="width:1px; background: var(--border);"></div>
+        <div>
+          <div style="font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--ink); line-height: 1;">∞</div>
+          <div style="font-size: 12px; color: var(--ink-3); margin-top: 2px;">可插拔 Plugin</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：可展开架构层级图 -->
+    <div class="hero-diagram fade-up fade-up-2">
+      <div class="arch-stack">
+
+        <div class="arch-layer arch-layer--agent open" onclick="toggleLayer(this)">
+          <div class="arch-layer-header">
+            <span class="arch-layer-name">
+              <span class="arch-dot"></span>
+              <span>Agent 层</span>
+            </span>
+            <span style="display:flex; gap: 12px; align-items:center;">
+              <span class="arch-layer-meta">决策 · 状态 · 调度</span>
+              <span class="arch-layer-expand">▾</span>
+            </span>
+          </div>
+          <div class="arch-layer-body">
+            5 个专注领域的 ReAct Agent：DataAgent → TrainAgent → EvalAgent → PerfAgent → DeployAgent，共享 PipelineState，驱动模型生产全流程。每个 Agent 拥有独立工作边界，通过标准接口互传血缘节点。
+          </div>
+        </div>
+
+        <div class="arch-layer arch-layer--skill" onclick="toggleLayer(this)">
+          <div class="arch-layer-header">
+            <span class="arch-layer-name">
+              <span class="arch-dot"></span>
+              <span>Skill 层</span>
+            </span>
+            <span style="display:flex; gap: 12px; align-items:center;">
+              <span class="arch-layer-meta">SOP · 知识 · 判断规则</span>
+              <span class="arch-layer-expand">▾</span>
+            </span>
+          </div>
+          <div class="arch-layer-body">
+            无状态知识文档，告诉 Agent「如何判断、如何决策」。严格三级渐进：基础版（产品经理维护，最低认知成本）→ 标准版（算法工程师维护）→ 专业版（资深算法+合规，高风险场景）。每个 Agent 各 3 个 Skill，不随意扩增。
+          </div>
+        </div>
+
+        <div class="arch-layer arch-layer--tool" onclick="toggleLayer(this)">
+          <div class="arch-layer-header">
+            <span class="arch-layer-name">
+              <span class="arch-dot"></span>
+              <span>Tool 层</span>
+            </span>
+            <span style="display:flex; gap: 12px; align-items:center;">
+              <span class="arch-layer-meta">原子执行 · Schema 约束</span>
+              <span class="arch-layer-expand">▾</span>
+            </span>
+          </div>
+          <div class="arch-layer-body">
+            原子能力单元，可被 Agent 独立调用。严格 Schema 约束：<code style="font-family: var(--font-mono); font-size: 11px; background: var(--paper-2); padding: 1px 4px; border-radius: 3px;">tool(param: type) → ToolResult[T]</code>。15+ 个核心 Tool，覆盖数据查询、模型训练、推理评估、压测、审批发布全链路。
+          </div>
+        </div>
+
+        <div class="arch-layer arch-layer--plugin" onclick="toggleLayer(this)">
+          <div class="arch-layer-header">
+            <span class="arch-layer-name">
+              <span class="arch-dot"></span>
+              <span>Plugin 层</span>
+            </span>
+            <span style="display:flex; gap: 12px; align-items:center;">
+              <span class="arch-layer-meta">增值 · 热插拔 · 高级模式</span>
+              <span class="arch-layer-expand">▾</span>
+            </span>
+          </div>
+          <div class="arch-layer-body">
+            灵活可插拔组件，保持系统迭代灵活度的 trade-off 设计。生命周期：experimental → stable → deprecated。标准接口：<code style="font-family: var(--font-mono); font-size: 11px; background: var(--accent-bg); padding: 1px 4px; border-radius: 3px;">on_activate / get_tools / get_skills</code>。各方团队均可自助提交。
+          </div>
+        </div>
+
+      </div>
+
+      <div class="arch-disclosure-note" style="margin-top: var(--sp-3);">
+        <strong>渐进式披露设计原则：</strong>点击任意层展开详细信息。架构从上到下，复杂度逐层递增，使用者只需关注自己所在层——普通用户从基础 Skill 开始，高级开发者深入 Tool 和 Plugin。
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ HARNESS ENGINEERING ═══ -->
+<section id="harness">
+<div class="container">
+  <p class="section-label">Harness 工程设计</p>
+  <h2 class="section-title">算法流水线的<br><em>自动化测试框架</em></h2>
+  <p class="section-desc">KGuardAgent 的工程内核——Harness 框架定义了模型生产流水线的标准化接入规范，让每个环节可测试、可追溯、可复现。</p>
+
+  <div class="harness-grid">
+    <div class="harness-card">
+      <div class="harness-card-num">01</div>
+      <div class="harness-card-title">PipelineState 中央状态</div>
+      <div class="harness-card-desc">所有 Agent 共享一个不可变状态对象，数据血缘节点（DataSetVersion → ModelVersion → EvalResult → PerfReport → DeployRecord）全程可追溯，写入即持久化。</div>
+    </div>
+    <div class="harness-card">
+      <div class="harness-card-num">02</div>
+      <div class="harness-card-title">ReAct Loop 执行模型</div>
+      <div class="harness-card-desc">每个 Agent 基于 Reason-Act-Observe 循环，Skill 提供判断规则，Tool 执行原子动作，循环直到达到终态或触发人审节点。</div>
+    </div>
+    <div class="harness-card">
+      <div class="harness-card-num">03</div>
+      <div class="harness-card-title">Schema 协议约束</div>
+      <div class="harness-card-desc">所有 Tool 严格遵循函数签名规范，所有 Plugin 遵循标准接口协议。非必要不新增实体，新增必须重新评审，防止架构熵增。</div>
+    </div>
+    <div class="harness-card">
+      <div class="harness-card-num">04</div>
+      <div class="harness-card-title">人审节点设计</div>
+      <div class="harness-card-desc">关键决策点（红线类目、资源超限、BLOCK 结论）自动暂停流程，通过 Kim Bot 消息路由到责任人，审批完成后自动恢复。</div>
+    </div>
+    <div class="harness-card">
+      <div class="harness-card-num">05</div>
+      <div class="harness-card-title">反馈环路</div>
+      <div class="harness-card-desc">EvalAgent 输出 ITERATE_DATA 时自动回流触发 DataAgent，PerfAgent 输出 OPTIMIZE 时通知推理平台工程师，形成闭环迭代。</div>
+    </div>
+    <div class="harness-card">
+      <div class="harness-card-num">06</div>
+      <div class="harness-card-title">AuditEvent 审计链</div>
+      <div class="harness-card-desc">从数据生产到模型上线，每个关键操作写入 AuditEvent（不可删除），合规审计、追溯分析均有完整链路支撑。</div>
+    </div>
+  </div>
+
+  <div class="harness-pipeline">
+    <div class="harness-pipeline-label">主链路 · 数据血缘传递方向</div>
+    <div class="pipeline-flow">
+      <span class="pipe-node pipe-node--data">DataAgent</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-node pipe-node--train">TrainAgent</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-node pipe-node--eval">EvalAgent</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-node pipe-node--perf">PerfAgent</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-node pipe-node--deploy">DeployAgent</span>
+    </div>
+    <div class="pipe-feedback">
+      <span class="pipe-feedback-line"></span>
+      <span style="color: oklch(55% 0.10 20); font-family: var(--font-mono); font-size: 11px;">↩ ITERATE_DATA — EvalAgent 判定不通过时回流至 DataAgent</span>
+      <span class="pipe-feedback-line"></span>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ AGENT SECTION ═══ -->
+<section id="agents">
+<div class="container">
+  <p class="section-label">Agent 层</p>
+  <h2 class="section-title">五个专注领域的<br><em>智能决策单元</em></h2>
+  <p class="section-desc">每个 Agent 负责模型生产流水线中的一个专注阶段，通过标准 PipelineState 接口互传血缘节点，独立决策、协同驱动。</p>
+
+  <div class="agent-grid">
+
+    <div class="agent-card" data-color="agent">
+      <div class="agent-card-head">
+        <div class="agent-index">01</div>
+        <div>
+          <div class="agent-name">DataAgent</div>
+          <div class="agent-role">数据生产专家</div>
+        </div>
+        <div class="agent-arrow">→</div>
+      </div>
+      <div class="agent-body">
+        <p class="agent-desc">采样策略制定、训练/测试集构建、数据质量门控（Quality Gate）。支持冷启动固定采样与主动学习难例挖掘。</p>
+        <div class="agent-io">
+          <div class="io-item">
+            <span class="io-label">输入</span>
+            <code>raw_source_spec</code>
+          </div>
+          <div class="io-sep">→</div>
+          <div class="io-item">
+            <span class="io-label">输出</span>
+            <code>DataSetVersion</code>
+          </div>
+        </div>
+        <div class="agent-tags">
+          <span class="tag">分层采样</span>
+          <span class="tag">增量去重</span>
+          <span class="tag">质量 Check</span>
+          <span class="tag">合规清洗</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="agent-card" data-color="train">
+      <div class="agent-card-head">
+        <div class="agent-index">02</div>
+        <div>
+          <div class="agent-name">TrainAgent</div>
+          <div class="agent-role">训练管理专家</div>
+        </div>
+        <div class="agent-arrow">→</div>
+      </div>
+      <div class="agent-body">
+        <p class="agent-desc">超参配置、Alpina 任务提交、训练进度监控、最优 checkpoint 选取。支持单卡/多卡分布式与 RLHF/DPO 微调。</p>
+        <div class="agent-io">
+          <div class="io-item">
+            <span class="io-label">输入</span>
+            <code>DataSetVersion</code>
+          </div>
+          <div class="io-sep">→</div>
+          <div class="io-item">
+            <span class="io-label">输出</span>
+            <code>ModelVersion</code>
+          </div>
+        </div>
+        <div class="agent-tags">
+          <span class="tag">超参搜索</span>
+          <span class="tag">断点续训</span>
+          <span class="tag">早停机制</span>
+          <span class="tag">RLHF/DPO</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="agent-card" data-color="eval">
+      <div class="agent-card-head">
+        <div class="agent-index">03</div>
+        <div>
+          <div class="agent-name">EvalAgent</div>
+          <div class="agent-role">评估引擎专家</div>
+        </div>
+        <div class="agent-arrow">→</div>
+      </div>
+      <div class="agent-body">
+        <p class="agent-desc">离线批量推理、多阈值 ROC 分析、场景细分准召、回归 case 追踪。红线类目强制通过率 ≥0.999，输出四分类结论。</p>
+        <div class="agent-io">
+          <div class="io-item">
+            <span class="io-label">输入</span>
+            <code>ModelVersion</code>
+          </div>
+          <div class="io-sep">→</div>
+          <div class="io-item">
+            <span class="io-label">输出</span>
+            <code>EvalResult</code>
+          </div>
+        </div>
+        <div class="agent-tags">
+          <span class="tag">多场景准召</span>
+          <span class="tag">ROC 分析</span>
+          <span class="tag">回归追踪</span>
+          <span class="tag tag--warn">红线合规</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="agent-card" data-color="perf">
+      <div class="agent-card-head">
+        <div class="agent-index">04</div>
+        <div>
+          <div class="agent-name">PerfAgent</div>
+          <div class="agent-role">性能压测专家</div>
+        </div>
+        <div class="agent-arrow">→</div>
+      </div>
+      <div class="agent-body">
+        <p class="agent-desc">系统级性能验收——算法合格之后、上线之前。多并发梯度压测、显卡数量预估、稳定性窗口验证，输出 PROCEED / OPTIMIZE / BLOCK 三种结论。</p>
+        <div class="agent-io">
+          <div class="io-item">
+            <span class="io-label">输入</span>
+            <code>EvalResult(DEPLOY)</code>
+          </div>
+          <div class="io-sep">→</div>
+          <div class="io-item">
+            <span class="io-label">输出</span>
+            <code>PerfReport</code>
+          </div>
+        </div>
+        <div class="agent-tags">
+          <span class="tag">并发梯度</span>
+          <span class="tag">GPU 预估</span>
+          <span class="tag">SLA 保障</span>
+          <span class="tag">混沌测试</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="agent-card" data-color="deploy">
+      <div class="agent-card-head">
+        <div class="agent-index">05</div>
+        <div>
+          <div class="agent-name">DeployAgent</div>
+          <div class="agent-role">部署管理专家</div>
+        </div>
+        <div class="agent-arrow">✓</div>
+      </div>
+      <div class="agent-body">
+        <p class="agent-desc">多场景 Gate 检查、BPM 人工审批、灰度梯度发布（5%→20%→100%），全程 AuditEvent 留存。在线指标异常自动触发回滚。</p>
+        <div class="agent-io">
+          <div class="io-item">
+            <span class="io-label">输入</span>
+            <code>PerfReport(PROCEED)</code>
+          </div>
+          <div class="io-sep">→</div>
+          <div class="io-item">
+            <span class="io-label">输出</span>
+            <code>DeployRecord</code>
+          </div>
+        </div>
+        <div class="agent-tags">
+          <span class="tag">Gate 检查</span>
+          <span class="tag">灰度发布</span>
+          <span class="tag">BPM 审批</span>
+          
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ═══ SKILL SECTION ═══ -->
+<section id="skills">
+<div class="container">
+  <p class="section-label">Skill 层</p>
+  <h2 class="section-title">渐进式披露的<br><em>三级工作流程</em></h2>
+  <p class="section-desc">Skill 是无状态的知识文档，告诉 Agent「如何判断、如何决策」。三级严格分层，先剪枝到基础版，降低认知成本；需要时再展开标准版和专业版。</p>
+
+  <!-- 三级说明 -->
+  <div class="skill-tiers">
+    <div class="skill-tier skill-tier--base">
+      <div class="tier-badge">基础版</div>
+      <div class="tier-title">冷启动 · 极简 SOP</div>
+      <div class="tier-desc">固定参数、最低门槛、全自动。产品经理可维护。先交付大图 + 评审，季度级迭代。</div>
+      <div class="tier-owner">🔵 AI 产品经理</div>
+    </div>
+    <div class="skill-tier-sep">
+      <div class="tier-arrow">▶</div>
+      <div class="tier-arrow-label">升级触发<br>（复杂场景）</div>
+    </div>
+    <div class="skill-tier skill-tier--standard">
+      <div class="tier-badge">标准版</div>
+      <div class="tier-title">完整规程 · 异常分支</div>
+      <div class="tier-desc">配置化参数、异常重试、多维检查。算法工程师维护。交付代码架构 + 评审，双周级迭代。</div>
+      <div class="tier-owner">🟣 应用算法工程师</div>
+    </div>
+    <div class="skill-tier-sep">
+      <div class="tier-arrow">▶</div>
+      <div class="tier-arrow-label">升级触发<br>（合规高风险）</div>
+    </div>
+    <div class="skill-tier skill-tier--expert">
+      <div class="tier-badge">专业版</div>
+      <div class="tier-title">高风险 · 合规约束</div>
+      <div class="tier-desc">红线规则、审计日志、人工抽检。资深算法+合规团队维护。随规则变动，评审后更新。</div>
+      <div class="tier-owner">⚫ 资深算法 + 合规</div>
+    </div>
+  </div>
+
+  <!-- 各 Agent Skill 展示 -->
+  <div class="skill-agent-tabs">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchAgent(this, 'data')">DataAgent</button>
+      <button class="tab-btn" onclick="switchAgent(this, 'train')">TrainAgent</button>
+      <button class="tab-btn" onclick="switchAgent(this, 'eval')">EvalAgent</button>
+      <button class="tab-btn" onclick="switchAgent(this, 'perf')">PerfAgent</button>
+      <button class="tab-btn" onclick="switchAgent(this, 'deploy')">DeployAgent</button>
+    </div>
+
+    <!-- DataAgent Skills -->
+    <div class="tab-panel active" id="skill-data">
+      <div class="skill-compare">
+        <div class="skill-col skill-col--base">
+          <div class="skill-col-label">基础版</div>
+          <div class="skill-col-name">data-sampling/base</div>
+          <ul class="skill-list">
+            <li>固定采样比例 10%，随机种子 42</li>
+            <li>Quality Gate：text_length ≥ 5 且 label != null</li>
+            <li>直接写入 DataSetVersion，无异常分支</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">SourceSpec</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">DataSetVersion(draft)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--standard">
+          <div class="skill-col-label">标准版</div>
+          <div class="skill-col-name">data-sampling/standard</div>
+          <ul class="skill-list">
+            <li>分层采样（正/负/边界 = 6:3:1），配置化</li>
+            <li>增量去重（MinHash LSH, jaccard=0.9）</li>
+            <li>多维质量 check，不达标自动补采（最多重试 3 次）</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">SourceSpec + SamplingConfig</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">DataSetVersion(valid)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--expert">
+          <div class="skill-col-label">专业版</div>
+          <div class="skill-col-name">data-sampling/expert</div>
+          <ul class="skill-list">
+            <li>主动学习难例挖掘（模型不确定度排序）</li>
+            <li>标注一致性阈值检查（Kappa ≥ 0.8）</li>
+            <li>合规敏感类目清洗 + 审计日志（每条溯源）</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">SourceSpec + CompliancePolicy</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">DataSetVersion(certified)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TrainAgent Skills -->
+    <div class="tab-panel" id="skill-train">
+      <div class="skill-compare">
+        <div class="skill-col skill-col--base">
+          <div class="skill-col-label">基础版</div>
+          <div class="skill-col-name">train-config/base</div>
+          <ul class="skill-list">
+            <li>固定超参：lr=1e-4, epoch=3, batch=32</li>
+            <li>单机单卡 A100，Kim Bot 触发 Alpina</li>
+            <li>轮询等待（10min/次，超时 8h 告警）</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">DataSetVersion</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">ModelVersion(pending)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--standard">
+          <div class="skill-col-label">标准版</div>
+          <div class="skill-col-name">train-config/standard</div>
+          <ul class="skill-list">
+            <li>超参搜索空间（lr/batch/wd），Grid/Random</li>
+            <li>多卡 DDP，early_stop(patience=3) + checkpoint</li>
+            <li>自动选最优 checkpoint（按 val_loss）</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">DataSetVersion + HpSpace</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">ModelVersion(best)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--expert">
+          <div class="skill-col-label">专业版</div>
+          <div class="skill-col-name">train-config/expert</div>
+          <ul class="skill-list">
+            <li>RLHF/DPO 微调：SFT → Reward → PPO/DPO</li>
+            <li>课程学习策略 + 灾备自动迁移</li>
+            <li>模型合规证书挂载到 ModelVersion</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">DataSetVersion + TrainStrategy</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">ModelVersion(rlhf)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EvalAgent Skills -->
+    <div class="tab-panel" id="skill-eval">
+      <div class="skill-compare">
+        <div class="skill-col skill-col--base">
+          <div class="skill-col-label">基础版</div>
+          <div class="skill-col-name">eval-benchmark/base</div>
+          <ul class="skill-list">
+            <li>固定测试集，P/R/F1（threshold=0.5）</li>
+            <li>通过条件：F1 ≥ 0.85 且 Recall ≥ 0.90</li>
+            <li>直接输出 DEPLOY 或 ITERATE</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">ModelVersion</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">EvalResult(pass/fail)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--standard">
+          <div class="skill-col-label">标准版</div>
+          <div class="skill-col-name">eval-benchmark/standard</div>
+          <ul class="skill-list">
+            <li>多阈值 ROC，自动建议最优 threshold</li>
+            <li>场景细分准召（泛色情/暴恐/广告/政治）</li>
+            <li>回归 case 对比，回归率 >10% → ITERATE</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">ModelVersion + EvalConfig</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">EvalResult(scored)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--expert">
+          <div class="skill-col-label">专业版</div>
+          <div class="skill-col-name">eval-benchmark/expert</div>
+          <ul class="skill-list">
+            <li>红线类目通过率 ≥ 0.999，强制 BLOCK</li>
+            <li>标注一致性（Kappa ≥ 0.85）</li>
+            <li>合规审计报告自动生成，含测试集 hash</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">ModelVersion + ComplianceSpec</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">EvalResult + AuditLog</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PerfAgent Skills -->
+    <div class="tab-panel" id="skill-perf">
+      <div class="skill-compare">
+        <div class="skill-col skill-col--base">
+          <div class="skill-col-label">基础版</div>
+          <div class="skill-col-name">perf-benchmark/base</div>
+          <ul class="skill-list">
+            <li>固定并发=10，持续 5min</li>
+            <li>通过条件：P99 &lt; 2000ms &amp; error_rate &lt; 1%</li>
+            <li>通过即 PROCEED，GPU 用默认值</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">ModelVersion</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">PerfReport(pass/fail)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--standard">
+          <div class="skill-col-label">标准版</div>
+          <div class="skill-col-name">perf-benchmark/standard</div>
+          <ul class="skill-list">
+            <li>并发梯度 5/20/50/100，延迟曲线分析</li>
+            <li>gpu_estimate(qps_target, mem_per_req_gb)</li>
+            <li>稳定性窗口 15min，无 OOM / 内存泄漏</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">ModelVersion + LoadSpec</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">PerfReport(scored)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--expert">
+          <div class="skill-col-label">专业版</div>
+          <div class="skill-col-name">perf-benchmark/expert</div>
+          <ul class="skill-list">
+            <li>SLA 协议级（P99/P999 分级），历史基线对比</li>
+            <li>异常恢复规则：连续 3 次超阈值 → BLOCK</li>
+            <li>回滚决策规则，上线后在线指标监控</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">ModelVersion + SLASpec</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">PerfReport + StabilityAudit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DeployAgent Skills -->
+    <div class="tab-panel" id="skill-deploy">
+      <div class="skill-compare">
+        <div class="skill-col skill-col--base">
+          <div class="skill-col-label">基础版</div>
+          <div class="skill-col-name">deploy-gate/base</div>
+          <ul class="skill-list">
+            <li>Gate：eval=DEPLOY &amp; perf=PROCEED</li>
+            <li>直接灰度发布，初始比例 5%</li>
+            <li>Kim 消息通知相关人员</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">EvalResult + PerfReport</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">DeployRecord(5%)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--standard">
+          <div class="skill-col-label">标准版</div>
+          <div class="skill-col-name">deploy-gate/standard</div>
+          <ul class="skill-list">
+            <li>多场景 Gate 阈值（各类目独立配置）</li>
+            <li>灰度梯度 5%→20%→100%，每级观察 24h</li>
+            <li>在线指标异常自动回滚</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">EvalResult + PerfReport + GateConfig</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">DeployRecord(full)</span>
+          </div>
+        </div>
+        <div class="skill-col skill-col--expert">
+          <div class="skill-col-label">专业版</div>
+          <div class="skill-col-name">deploy-gate/expert</div>
+          <ul class="skill-list">
+            <li>红线类目强制 BPM 人工审批，安全团队签字</li>
+            <li>回滚触发：误报率 ΔΔ>5% 或 P99 ΔΔ>20%</li>
+            <li>AuditEvent 不可删除</li>
+          </ul>
+          <div class="skill-io-row">
+            <span class="skill-io-in">EvalResult + SecurityGate</span>
+            <span class="skill-io-arr">→</span>
+            <span class="skill-io-out">DeployRecord + AuditEvent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ═══ TOOLS SECTION ═══ -->
+<section id="tools">
+<div class="container">
+  <p class="section-label">Tool 层</p>
+  <h2 class="section-title">底层原子能力，<br><em>独立可调用</em></h2>
+  <p class="section-desc">Tool 是最小执行单元。严格 Schema 约束，可被 Agent 直接调用，也可被 Plugin 组合复用。非必要不新增，新增必须评审。</p>
+
+  <div class="tool-principle">
+      <div class="tool-principle-title">Schema 设计原则</div>
+      <ul class="tool-principle-list">
+        <li><span class="tool-schema-badge">签名</span>tool(param: type) → ToolResult[T]</li>
+        <li><span class="tool-schema-badge">返回</span>统一 ToolResult 包装，含 status / data / error_msg</li>
+        <li><span class="tool-schema-badge">幂等</span>读操作天然幂等，写操作需 idempotency_key</li>
+        <li><span class="tool-schema-badge">超时</span>每个 Tool 声明 timeout_sec，Agent 据此规划重试</li>
+        <li><span class="tool-schema-badge">原则</span>非必要不新增实体，新增必须重新评审</li>
+      </ul>
+    </div>
+  <div class="tool-table-wrap" style="margin-top: var(--sp-5); width: 100%;">
+      <table class="tool-table">
+        <thead>
+          <tr>
+            <th>Tool 名称</th>
+            <th>函数签名（简）</th>
+            <th>返回类型</th>
+            <th>归属 Agent</th>
+            <th>负责角色</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tool-fn">hive_query</span></td>
+            <td><span class="tool-sig">(sql: str, limit: int)</span></td>
+            <td><span class="tool-sig">ToolResult[DataFrame]</span></td>
+            <td><span class="tool-agent-badge badge-data">DataAgent</span></td>
+            <td>🔷 数据工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">hive_upload</span></td>
+            <td><span class="tool-sig">(df, table, mode)</span></td>
+            <td><span class="tool-sig">ToolResult[UploadReceipt]</span></td>
+            <td><span class="tool-agent-badge badge-data">DataAgent</span></td>
+            <td>🔷 数据工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">data_quality_check</span></td>
+            <td><span class="tool-sig">(dataset_id, rules)</span></td>
+            <td><span class="tool-sig">ToolResult[QualityReport]</span></td>
+            <td><span class="tool-agent-badge badge-data">DataAgent</span></td>
+            <td>🔶 算法引擎工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">alpina_submit_job</span></td>
+            <td><span class="tool-sig">(config: TrainConfig, ds_ver)</span></td>
+            <td><span class="tool-sig">ToolResult[JobId]</span></td>
+            <td><span class="tool-agent-badge badge-train">TrainAgent</span></td>
+            <td>🔷 训练平台工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">alpina_poll_status</span></td>
+            <td><span class="tool-sig">(job_id: str)</span></td>
+            <td><span class="tool-sig">ToolResult[TrainStatus]</span></td>
+            <td><span class="tool-agent-badge badge-train">TrainAgent</span></td>
+            <td>🔷 训练平台工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">blob_store_upload</span></td>
+            <td><span class="tool-sig">(local_path, bucket)</span></td>
+            <td><span class="tool-sig">ToolResult[BlobRef]</span></td>
+            <td><span class="tool-agent-badge badge-train">TrainAgent</span></td>
+            <td>🔷 系统工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">inference_cli_run</span></td>
+            <td><span class="tool-sig">(model_key, dataset_id)</span></td>
+            <td><span class="tool-sig">ToolResult[PredResult]</span></td>
+            <td><span class="tool-agent-badge badge-eval">EvalAgent</span></td>
+            <td>🔶 算法引擎工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">metric_compute</span></td>
+            <td><span class="tool-sig">(pred, threshold, category_field)</span></td>
+            <td><span class="tool-sig">ToolResult[MetricReport]</span></td>
+            <td><span class="tool-agent-badge badge-eval">EvalAgent</span></td>
+            <td>🔶 算法引擎工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">case_diff_query</span></td>
+            <td><span class="tool-sig">(model_a, model_b, diff_type)</span></td>
+            <td><span class="tool-sig">ToolResult[CaseDiff]</span></td>
+            <td><span class="tool-agent-badge badge-eval">EvalAgent</span></td>
+            <td>🔶 算法引擎工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">perf_benchmark_submit</span></td>
+            <td><span class="tool-sig">(model_key, load_spec: LoadSpec)</span></td>
+            <td><span class="tool-sig">ToolResult[PerfJobId]</span></td>
+            <td><span class="tool-agent-badge badge-perf">PerfAgent</span></td>
+            <td>🟠 推理平台工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">perf_result_poll</span></td>
+            <td><span class="tool-sig">(job_id: str)</span></td>
+            <td><span class="tool-sig">ToolResult[PerfMetrics]</span></td>
+            <td><span class="tool-agent-badge badge-perf">PerfAgent</span></td>
+            <td>🟠 推理平台工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">gpu_estimate</span></td>
+            <td><span class="tool-sig">(qps, mem_per_req_gb, safety_factor)</span></td>
+            <td><span class="tool-sig">ToolResult[GpuQuota]</span></td>
+            <td><span class="tool-agent-badge badge-perf">PerfAgent</span></td>
+            <td>🟠 推理平台工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">bpm_create_approval</span></td>
+            <td><span class="tool-sig">(deploy_req: DeployRequest)</span></td>
+            <td><span class="tool-sig">ToolResult[ApprovalId]</span></td>
+            <td><span class="tool-agent-badge badge-deploy">DeployAgent</span></td>
+            <td>🔷 系统工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">gray_release_submit</span></td>
+            <td><span class="tool-sig">(model_key, ratio, scene)</span></td>
+            <td><span class="tool-sig">ToolResult[ReleaseTicket]</span></td>
+            <td><span class="tool-agent-badge badge-deploy">DeployAgent</span></td>
+            <td>🟠 推理平台工程师</td>
+          </tr>
+          <tr>
+            <td><span class="tool-fn">audit_event_write</span></td>
+            <td><span class="tool-sig">(event: AuditEvent)</span></td>
+            <td><span class="tool-sig">ToolResult[AuditReceipt]</span></td>
+            <td><span class="tool-agent-badge badge-deploy">DeployAgent</span></td>
+            <td>🔷 系统工程师</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+</div>
+</section>
+
+<!-- ═══ PLUGIN SECTION ═══ -->
+<section id="plugins">
+<div class="container">
+  <p class="section-label">Plugin 层</p>
+  <h2 class="section-title">灵活可插拔，<br><em>高级开发者模式</em></h2>
+  <p class="section-desc">Plugin 是保持系统迭代灵活度的 trade-off 设计。各方团队可将增值功能做成插件，只需遵循标准接口协议，无需修改核心框架。</p>
+
+  <div class="plugin-lifecycle">
+    <span class="lifecycle-step lifecycle-step--exp">experimental</span>
+    <span class="lifecycle-arrow">→</span>
+    <span class="lifecycle-step lifecycle-step--stable">stable</span>
+    <span class="lifecycle-arrow">→</span>
+    <span class="lifecycle-step lifecycle-step--dep">deprecated</span>
+  </div>
+
+  <div class="plugin-interface-box">
+    <div class="plugin-interface-title">标准接口协议 · 所有 Plugin 必须实现</div>
+    <div class="plugin-interface-code">
+<span class="kw">class</span> <span class="fn">BasePlugin</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">def</span> <span class="fn">on_activate</span>(self, ctx: <span class="tp">PipelineState</span>) -&gt; <span class="tp">None</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># 接收当前流水线状态，完成初始化</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">def</span> <span class="fn">get_tools</span>(self) -&gt; <span class="tp">List[ToolDef]</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># 返回本 Plugin 提供的额外 Tool 列表</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">def</span> <span class="fn">get_skills</span>(self) -&gt; <span class="tp">List[SkillRef]</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># 返回本 Plugin 注入的额外 Skill 引用</span>
+    </div>
+  </div>
+
+  <div class="plugin-grid">
+    <div class="plugin-card">
+      <div class="plugin-card-header">
+        <div>
+          <div class="plugin-name">active_learning_plugin</div>
+          <span class="plugin-agent-tag">DataAgent</span>
+        </div>
+        <span class="plugin-lifecycle-tag">experimental</span>
+      </div>
+      <p class="plugin-desc">主动学习难例挖掘。基于当前模型不确定度排序，优先对熵值最高的样本送标注，减少标注量 30%~50%，聚焦边界样本。</p>
+      <div class="plugin-tools-label">提供的 Tools</div>
+      <div class="plugin-tools-list">
+        <span class="plugin-tool-chip">annotation_suggest_tool</span>
+      </div>
+    </div>
+
+    <div class="plugin-card">
+      <div class="plugin-card-header">
+        <div>
+          <div class="plugin-name">hp_search_plugin</div>
+          <span class="plugin-agent-tag">TrainAgent</span>
+        </div>
+        <span class="plugin-lifecycle-tag">experimental</span>
+      </div>
+      <p class="plugin-desc">Optuna/Bayesian 超参自动搜索。基于历史实验结果智能推荐下一组超参组合，减少 Trial 次数约 40%。</p>
+      <div class="plugin-tools-label">提供的 Tools</div>
+      <div class="plugin-tools-list">
+        <span class="plugin-tool-chip">optuna_suggest_tool</span>
+      </div>
+    </div>
+
+    <div class="plugin-card">
+      <div class="plugin-card-header">
+        <div>
+          <div class="plugin-name">error_analysis_plugin</div>
+          <span class="plugin-agent-tag">EvalAgent</span>
+        </div>
+        <span class="plugin-lifecycle-tag">experimental</span>
+      </div>
+      <p class="plugin-desc">误报/漏报案例语义聚类自动归因。对 case_diff 输出做聚类分析，自动生成归因摘要，帮助算法工程师快速定位问题。</p>
+      <div class="plugin-tools-label">提供的 Tools</div>
+      <div class="plugin-tools-list">
+        <span class="plugin-tool-chip">case_cluster_tool</span>
+      </div>
+    </div>
+
+    <div class="plugin-card">
+      <div class="plugin-card-header">
+        <div>
+          <div class="plugin-name">inference_opt_plugin</div>
+          <span class="plugin-agent-tag">PerfAgent</span>
+        </div>
+        <span class="plugin-lifecycle-tag">experimental</span>
+      </div>
+      <p class="plugin-desc">vLLM 量化与算子融合优化。压测发现性能瓶颈后，自动尝试 INT8/INT4 量化，对比量化前后 P99 diff，给出优化建议。</p>
+      <div class="plugin-tools-label">提供的 Tools</div>
+      <div class="plugin-tools-list">
+        <span class="plugin-tool-chip">vllm_quant_tool</span>
+      </div>
+    </div>
+
+    <div class="plugin-card">
+      <div class="plugin-card-header">
+        <div>
+          <div class="plugin-name">chaos_test_plugin</div>
+          <span class="plugin-agent-tag">PerfAgent</span>
+        </div>
+        <span class="plugin-lifecycle-tag">experimental</span>
+      </div>
+      <p class="plugin-desc">混沌工程测试。支持 OOM 注入、网络抖动、显卡故障模拟，验证推理服务的容错能力和恢复速度。</p>
+      <div class="plugin-tools-label">提供的 Tools</div>
+      <div class="plugin-tools-list">
+        <span class="plugin-tool-chip">chaos_inject_tool</span>
+      </div>
+    </div>
+
+    <div class="plugin-card">
+      <div class="plugin-card-header">
+        <div>
+          <div class="plugin-name">rollback_guard_plugin</div>
+          <span class="plugin-agent-tag">DeployAgent</span>
+        </div>
+        <span class="plugin-lifecycle-tag">experimental</span>
+      </div>
+      <p class="plugin-desc">在线指标异常自动回滚保护。持续监控灰度期间的误报率和延迟，触发条件满足时自动调用 gray_release_submit(ratio=0) 回滚。</p>
+      <div class="plugin-tools-label">提供的 Tools</div>
+      <div class="plugin-tools-list">
+        <span class="plugin-tool-chip">rollback_trigger_tool</span>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer>
+<div class="container">
+  <div class="footer-inner">
+    <span class="footer-text">KGUARD-AGENT · V1 · 安全算法中心</span>
+    <span class="footer-text">安全算法中心</span>
+  </div>
+</div>
+</footer>
+
+<script>
+function toggleLayer(el) {
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.arch-layer').forEach(l => l.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+
+function switchAgent(btn, agentId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('skill-' + agentId).classList.add('active');
+}
+
+// Intersection observer for scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.harness-card, .agent-card, .plugin-card, .skill-col').forEach((card, i) => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(18px)';
+  card.style.transition = `opacity 0.45s ease ${i * 0.05}s, transform 0.45s cubic-bezier(0.25,1,0.5,1) ${i * 0.05}s`;
+  observer.observe(card);
+});
+
+// Active nav link highlight
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  const y = window.scrollY + 80;
+  sections.forEach(sec => {
+    if (y >= sec.offsetTop && y < sec.offsetTop + sec.offsetHeight) {
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + sec.id
+          ? 'var(--ink)' : '';
+      });
+    }
+  });
+}, { passive: true });
+</script>
+</body>
+</html>
