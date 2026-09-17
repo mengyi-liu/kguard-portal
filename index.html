@@ -2,6 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<script>
+  (function(){var t=localStorage.getItem('kguard-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KGuardAgent · 安全算法中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,27 +15,111 @@
 ═══════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  /* Palette — dark mode */
-  --ink:        oklch(92% 0.012 255);
-  --ink-2:      oklch(72% 0.016 255);
-  --ink-3:      oklch(52% 0.018 255);
-  --ink-4:      oklch(38% 0.014 255);
+  /* ── Light theme (default) ── */
+  --ink:        oklch(18% 0.02 260);
+  --ink-2:      oklch(35% 0.025 255);
+  --ink-3:      oklch(52% 0.02 255);
+  --ink-4:      oklch(68% 0.015 255);
+  --paper:      oklch(98% 0.008 255);
+  --paper-2:    oklch(95% 0.010 255);
+  --paper-3:    oklch(91% 0.012 255);
+  --border:     oklch(86% 0.012 255);
+  --border-2:   oklch(80% 0.014 255);
+
+  /* Accent — warm amber */
+  --accent:     oklch(64% 0.18 62);
+  --accent-dim: oklch(72% 0.14 62);
+  --accent-bg:  oklch(96% 0.04 62);
+
+  /* Layer colors */
+  --c-agent:   oklch(38% 0.14 255);
+  --c-skill:   oklch(42% 0.13 295);
+  --c-tool:    oklch(36% 0.11 170);
+  --c-plugin:  oklch(44% 0.14 35);
+
+  /* Section-specific tokens */
+  --nav-bg:              oklch(98% 0.008 255 / 0.92);
+  --bg-dark-section:     oklch(18% 0.02 260);
+  --text-dark-section:   oklch(92% 0.012 255);
+  --label-dark-section:  oklch(60% 0.02 255);
+  --desc-dark-section:   oklch(72% 0.018 255);
+  --bg-tier-base:        oklch(96% 0.025 255);
+  --bg-tier-standard:    oklch(96% 0.022 295);
+  --bg-tier-expert:      oklch(96% 0.018 260);
+  --agent-hover-shadow:  oklch(18% 0.02 260 / 0.10);
+
+  /* Badge backgrounds */
+  --badge-data-bg:   oklch(38% 0.14 255 / 0.10);
+  --badge-train-bg:  oklch(38% 0.14 220 / 0.10);
+  --badge-eval-bg:   oklch(42% 0.13 295 / 0.10);
+  --badge-perf-bg:   oklch(44% 0.14 55  / 0.10);
+  --badge-deploy-bg: oklch(36% 0.11 170 / 0.10);
+  --badge-data-border:   oklch(38% 0.14 255 / 0.3);
+  --badge-train-border:  oklch(38% 0.14 220 / 0.3);
+  --badge-eval-border:   oklch(42% 0.13 295 / 0.3);
+  --badge-perf-border:   oklch(44% 0.14 55  / 0.3);
+  --badge-deploy-border: oklch(36% 0.11 170 / 0.3);
+  --badge-train-color:   oklch(38% 0.14 220);
+  --badge-perf-color:    oklch(44% 0.14 55);
+
+  /* Pipe node colors */
+  --pipe-data-bg:    oklch(38% 0.14 255 / 0.2); --pipe-data-fg:    oklch(72% 0.12 255);
+  --pipe-train-bg:   oklch(38% 0.14 220 / 0.2); --pipe-train-fg:   oklch(72% 0.12 220);
+  --pipe-eval-bg:    oklch(42% 0.13 295 / 0.2); --pipe-eval-fg:    oklch(72% 0.11 295);
+  --pipe-perf-bg:    oklch(44% 0.14 55  / 0.2); --pipe-perf-fg:    oklch(72% 0.14 55);
+  --pipe-deploy-bg:  oklch(36% 0.11 170 / 0.2); --pipe-deploy-fg:  oklch(65% 0.11 170);
+}
+
+/* ── Dark theme ── */
+html[data-theme="dark"] {
+  --ink:        oklch(91% 0.012 255);
+  --ink-2:      oklch(70% 0.016 255);
+  --ink-3:      oklch(55% 0.018 255);
+  --ink-4:      oklch(42% 0.016 255);
   --paper:      oklch(12% 0.018 260);
   --paper-2:    oklch(16% 0.020 260);
   --paper-3:    oklch(20% 0.022 260);
   --border:     oklch(26% 0.020 260);
   --border-2:   oklch(32% 0.022 260);
 
-  /* Accent — cyan-blue glow */
   --accent:     oklch(72% 0.18 220);
   --accent-dim: oklch(62% 0.14 220);
   --accent-bg:  oklch(20% 0.06 220);
 
-  /* Layer colors */
   --c-agent:   oklch(65% 0.16 255);
   --c-skill:   oklch(68% 0.15 295);
   --c-tool:    oklch(62% 0.14 170);
   --c-plugin:  oklch(70% 0.16 55);
+
+  --nav-bg:              oklch(12% 0.018 260 / 0.92);
+  --bg-dark-section:     oklch(9%  0.020 265);
+  --text-dark-section:   oklch(91% 0.012 255);
+  --label-dark-section:  oklch(50% 0.03  220);
+  --desc-dark-section:   oklch(58% 0.018 255);
+  --bg-tier-base:        oklch(16% 0.025 260);
+  --bg-tier-standard:    oklch(16% 0.022 295);
+  --bg-tier-expert:      oklch(16% 0.018 265);
+  --agent-hover-shadow:  oklch(5%  0.02  260 / 0.5);
+
+  --badge-data-bg:   oklch(65% 0.16 255 / 0.12);
+  --badge-train-bg:  oklch(65% 0.16 220 / 0.12);
+  --badge-eval-bg:   oklch(68% 0.15 295 / 0.12);
+  --badge-perf-bg:   oklch(70% 0.16 55  / 0.12);
+  --badge-deploy-bg: oklch(62% 0.14 170 / 0.12);
+  --badge-data-border:   oklch(65% 0.16 255 / 0.3);
+  --badge-train-border:  oklch(65% 0.16 220 / 0.3);
+  --badge-eval-border:   oklch(68% 0.15 295 / 0.3);
+  --badge-perf-border:   oklch(70% 0.16 55  / 0.3);
+  --badge-deploy-border: oklch(62% 0.14 170 / 0.3);
+  --badge-train-color:   oklch(65% 0.16 220);
+  --badge-perf-color:    oklch(70% 0.16 55);
+
+  --pipe-data-bg:    oklch(65% 0.16 255 / 0.15); --pipe-data-fg:    oklch(75% 0.16 255);
+  --pipe-train-bg:   oklch(65% 0.16 220 / 0.15); --pipe-train-fg:   oklch(75% 0.16 220);
+  --pipe-eval-bg:    oklch(68% 0.15 295 / 0.15); --pipe-eval-fg:    oklch(78% 0.15 295);
+  --pipe-perf-bg:    oklch(70% 0.16 55  / 0.15); --pipe-perf-fg:    oklch(80% 0.16 55);
+  --pipe-deploy-bg:  oklch(62% 0.14 170 / 0.15); --pipe-deploy-fg:  oklch(72% 0.14 170);
+}
 
   /* Type */
   --font-display: 'Nunito', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
@@ -67,7 +154,7 @@ nav {
   height: 56px;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 var(--sp-8);
-  background: oklch(12% 0.018 260 / 0.92);
+  background: var(--nav-bg);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
@@ -102,6 +189,29 @@ nav {
   text-decoration: none;
   transition: background 0.15s, border-color 0.15s;
 }
+
+.theme-toggle {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--paper-2);
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.theme-toggle:hover {
+  background: var(--paper-3);
+  color: var(--ink);
+  border-color: var(--border-2);
+}
+.theme-toggle svg { width: 15px; height: 15px; }
+html[data-theme="dark"]  .icon-sun  { display: block; }
+html[data-theme="dark"]  .icon-moon { display: none; }
+html:not([data-theme="dark"]) .icon-sun  { display: none; }
+html:not([data-theme="dark"]) .icon-moon { display: block; }
+
 a.nav-badge:hover {
   background: oklch(64% 0.18 62 / 0.15);
   border-color: oklch(64% 0.18 62 / 0.55);
@@ -278,12 +388,12 @@ section:nth-child(even) { background: var(--paper-2); }
 /* ═══════════════════════════════════════════
    HARNESS SECTION
 ═══════════════════════════════════════════ */
-#harness { background: oklch(9% 0.020 265); color: var(--ink); }
-#harness .section-label { color: oklch(50% 0.03 220); }
-#harness .section-label::before { background: oklch(50% 0.03 220); }
+#harness { background: var(--bg-dark-section); color: var(--text-dark-section); }
+#harness .section-label { color: var(--label-dark-section); }
+#harness .section-label::before { background: var(--label-dark-section); }
 #harness .section-title { color: oklch(88% 0.012 255); }
 #harness .section-title em { color: var(--accent); font-style: normal; font-weight: 700; }
-#harness .section-desc { color: oklch(58% 0.018 255); }
+#harness .section-desc { color: var(--desc-dark-section); }
 
 .harness-grid {
   display: grid;
@@ -335,11 +445,11 @@ section:nth-child(even) { background: var(--paper-2); }
   font-family: var(--font-mono); font-size: 12px; font-weight: 500;
   white-space: nowrap;
 }
-.pipe-node--data   { background: oklch(65% 0.16 255 / 0.15); color: oklch(75% 0.16 255); border: 1px solid oklch(65% 0.16 255 / 0.4); }
-.pipe-node--train  { background: oklch(65% 0.16 220 / 0.15); color: oklch(75% 0.16 220); border: 1px solid oklch(65% 0.16 220 / 0.4); }
-.pipe-node--eval   { background: oklch(68% 0.15 295 / 0.15); color: oklch(78% 0.15 295); border: 1px solid oklch(68% 0.15 295 / 0.4); }
-.pipe-node--perf   { background: oklch(70% 0.16 55 / 0.15);  color: oklch(80% 0.16 55);  border: 1px solid oklch(70% 0.16 55 / 0.4); }
-.pipe-node--deploy { background: oklch(62% 0.14 170 / 0.15); color: oklch(72% 0.14 170); border: 1px solid oklch(62% 0.14 170 / 0.4); }
+.pipe-node--data   { background: var(--pipe-data-bg);   color: var(--pipe-data-fg);   border: 1px solid var(--pipe-data-bg); }
+.pipe-node--train  { background: var(--pipe-train-bg);  color: var(--pipe-train-fg);  border: 1px solid var(--pipe-train-bg); }
+.pipe-node--eval   { background: var(--pipe-eval-bg);   color: var(--pipe-eval-fg);   border: 1px solid var(--pipe-eval-bg); }
+.pipe-node--perf   { background: var(--pipe-perf-bg);   color: var(--pipe-perf-fg);   border: 1px solid var(--pipe-perf-bg); }
+.pipe-node--deploy { background: var(--pipe-deploy-bg); color: var(--pipe-deploy-fg); border: 1px solid var(--pipe-deploy-bg); }
 .pipe-arrow {
   color: oklch(45% 0.02 255); font-family: var(--font-mono); font-size: 14px;
 }
@@ -372,7 +482,7 @@ section:nth-child(even) { background: var(--paper-2); }
   transition: box-shadow 0.2s, transform 0.2s;
 }
 .agent-card:hover {
-  box-shadow: 0 8px 24px oklch(5% 0.02 260 / 0.5);
+  box-shadow: 0 8px 24px var(--agent-hover-shadow);
   transform: translateY(-3px);
 }
 .agent-card-head {
@@ -440,9 +550,9 @@ section:nth-child(even) { background: var(--paper-2); }
 }
 .tier-arrow { font-size: 18px; color: var(--ink-4); }
 .tier-arrow-label { font-size: 10px; color: var(--ink-4); text-align: center; line-height: 1.4; }
-.skill-tier--base     { background: oklch(16% 0.025 260); }
-.skill-tier--standard { background: oklch(16% 0.022 295); }
-.skill-tier--expert   { background: oklch(16% 0.018 265); }
+.skill-tier--base     { background: var(--bg-tier-base); }
+.skill-tier--standard { background: var(--bg-tier-standard); }
+.skill-tier--expert   { background: var(--bg-tier-expert); }
 .tier-badge {
   display: inline-block;
   font-family: var(--font-mono); font-size: 10px; font-weight: 500;
@@ -572,21 +682,21 @@ section:nth-child(even) { background: var(--paper-2); }
   display: inline-block; padding: 2px 7px; border-radius: 100px;
   font-size: 10px; white-space: nowrap;
 }
-.badge-data   { background: oklch(65% 0.16 255 / 0.12); color: var(--c-agent); border: 1px solid oklch(65% 0.16 255 / 0.3); }
-.badge-train  { background: oklch(65% 0.16 220 / 0.12); color: oklch(65% 0.16 220); border: 1px solid oklch(65% 0.16 220 / 0.3); }
-.badge-eval   { background: oklch(68% 0.15 295 / 0.12); color: var(--c-skill); border: 1px solid oklch(68% 0.15 295 / 0.3); }
-.badge-perf   { background: oklch(70% 0.16 55 / 0.12);  color: oklch(70% 0.16 55);  border: 1px solid oklch(70% 0.16 55 / 0.3); }
-.badge-deploy { background: oklch(62% 0.14 170 / 0.12); color: var(--c-tool); border: 1px solid oklch(62% 0.14 170 / 0.3); }
+.badge-data   { background: var(--badge-data-bg);   color: var(--c-agent);              border: 1px solid var(--badge-data-border); }
+.badge-train  { background: var(--badge-train-bg);  color: var(--badge-train-color);     border: 1px solid var(--badge-train-border); }
+.badge-eval   { background: var(--badge-eval-bg);   color: var(--c-skill);               border: 1px solid var(--badge-eval-border); }
+.badge-perf   { background: var(--badge-perf-bg);   color: var(--badge-perf-color);      border: 1px solid var(--badge-perf-border); }
+.badge-deploy { background: var(--badge-deploy-bg); color: var(--c-tool);                border: 1px solid var(--badge-deploy-border); }
 
 /* ═══════════════════════════════════════════
    PLUGIN SECTION
 ═══════════════════════════════════════════ */
-#plugins { background: oklch(9% 0.020 265); }
-#plugins .section-label { color: oklch(60% 0.02 255); }
-#plugins .section-label::before { background: oklch(60% 0.02 255); }
+#plugins { background: var(--bg-dark-section); color: var(--text-dark-section); }
+#plugins .section-label { color: var(--label-dark-section); }
+#plugins .section-label::before { background: var(--label-dark-section); }
 #plugins .section-title { color: oklch(88% 0.012 255); }
 #plugins .section-title em { color: var(--c-plugin); font-style: normal; font-weight: 700; }
-#plugins .section-desc { color: oklch(58% 0.018 255); }
+#plugins .section-desc { color: var(--desc-dark-section); }
 
 .plugin-lifecycle {
   display: flex; align-items: center; gap: var(--sp-3);
@@ -743,6 +853,10 @@ footer {
     <li><a href="#plugins">Plugin 层</a></li>
   </ul>
   <span class="nav-badge">V1 · Alpha</span>
+  <button class="theme-toggle" id="themeToggle" title="切换主题" aria-label="切换亮色/暗色主题">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+  </button>
 </nav>
 
 <!-- ═══ HERO ═══ -->
@@ -1690,6 +1804,18 @@ document.querySelectorAll('.harness-card, .agent-card, .plugin-card, .skill-col'
   card.style.transform = 'translateY(18px)';
   card.style.transition = `opacity 0.45s ease ${i * 0.05}s, transform 0.45s cubic-bezier(0.25,1,0.5,1) ${i * 0.05}s`;
   observer.observe(card);
+});
+
+// Theme toggle
+const html = document.documentElement;
+const toggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('kguard-theme') || 'dark';
+html.setAttribute('data-theme', savedTheme);
+toggle.addEventListener('click', () => {
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('kguard-theme', next);
 });
 
 // Active nav link highlight
