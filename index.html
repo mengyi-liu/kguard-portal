@@ -756,7 +756,7 @@ footer {
         内容安全模型生产<br><span class="alt">全流程自助化</span>智能体框架
       </h1>
       <p class="hero-desc fade-up fade-up-2">
-        从数据生产到模型训练、评估、压测、部署，KGuardAgent 以五个专注领域的 Agent 驱动算法流水线全自动运行。基于<strong>渐进式披露</strong>原则设计，每一层从基础到专业渐次展开，降低认知成本，聚焦核心决策。
+        从数据生产到模型训练、评估、压测、部署，KGuardAgent 以五个专注领域的 Agent 驱动算法流水线全自助运行。基于<strong>渐进式披露</strong>原则设计，每一层从基础到专业渐次展开，降低认知成本，聚焦核心决策。
       </p>
       <div class="hero-cta-row fade-up fade-up-3">
         <a href="#agents" class="btn-primary">
@@ -892,12 +892,12 @@ footer {
     <div class="harness-card">
       <div class="harness-card-num">04</div>
       <div class="harness-card-title">人审节点设计</div>
-      <div class="harness-card-desc">关键决策点（红线类目、资源超限、BLOCK 结论）自动暂停流程，通过 Kim Bot 消息路由到责任人，审批完成后自动恢复。</div>
+      <div class="harness-card-desc">关键决策点（红线类目、资源超限、BLOCK 结论）自助暂停流程，通过 Kim Bot 消息路由到责任人，审批完成后自助恢复。</div>
     </div>
     <div class="harness-card">
       <div class="harness-card-num">05</div>
       <div class="harness-card-title">反馈环路</div>
-      <div class="harness-card-desc">EvalAgent 输出 ITERATE_DATA 时自动回流触发 DataAgent，PerfAgent 输出 OPTIMIZE 时通知推理平台工程师，形成闭环迭代。</div>
+      <div class="harness-card-desc">EvalAgent 输出 ITERATE_DATA 时自助回流触发 DataAgent，PerfAgent 输出 OPTIMIZE 时通知推理平台工程师，形成闭环迭代。</div>
     </div>
     <div class="harness-card">
       <div class="harness-card-num">06</div>
@@ -1071,7 +1071,7 @@ footer {
         <div class="agent-arrow">✓</div>
       </div>
       <div class="agent-body">
-        <p class="agent-desc">多场景 Gate 检查、BPM 人工审批、灰度梯度发布（5%→20%→100%），全程 AuditEvent 留存。在线指标异常自动触发回滚。</p>
+        <p class="agent-desc">多场景 Gate 检查、BPM 人工审批、灰度梯度发布（5%→20%→100%），全程 AuditEvent 留存。在线指标异常自助触发回滚。</p>
         <div class="agent-io">
           <div class="io-item">
             <span class="io-label">输入</span>
@@ -1108,7 +1108,7 @@ footer {
     <div class="skill-tier skill-tier--base">
       <div class="tier-badge">基础版</div>
       <div class="tier-title">冷启动 · 极简 SOP</div>
-      <div class="tier-desc">固定参数、最低门槛、全自动。产品经理可维护。先交付大图 + 评审，季度级迭代。</div>
+      <div class="tier-desc">固定参数、最低门槛、全自助。产品经理可维护。先交付大图 + 评审，季度级迭代。</div>
       <div class="tier-owner">🔵 AI 产品经理</div>
     </div>
     <div class="skill-tier-sep">
@@ -1166,7 +1166,7 @@ footer {
           <ul class="skill-list">
             <li>分层采样（正/负/边界 = 6:3:1），配置化</li>
             <li>增量去重（MinHash LSH, jaccard=0.9）</li>
-            <li>多维质量 check，不达标自动补采（最多重试 3 次）</li>
+            <li>多维质量 check，不达标自助补采（最多重试 3 次）</li>
           </ul>
           <div class="skill-io-row">
             <span class="skill-io-in">SourceSpec + SamplingConfig</span>
@@ -1214,7 +1214,7 @@ footer {
           <ul class="skill-list">
             <li>超参搜索空间（lr/batch/wd），Grid/Random</li>
             <li>多卡 DDP，early_stop(patience=3) + checkpoint</li>
-            <li>自动选最优 checkpoint（按 val_loss）</li>
+            <li>自助选最优 checkpoint（按 val_loss）</li>
           </ul>
           <div class="skill-io-row">
             <span class="skill-io-in">DataSetVersion + HpSpace</span>
@@ -1227,7 +1227,7 @@ footer {
           <div class="skill-col-name">train-config/expert</div>
           <ul class="skill-list">
             <li>RLHF/DPO 微调：SFT → Reward → PPO/DPO</li>
-            <li>课程学习策略 + 灾备自动迁移</li>
+            <li>课程学习策略 + 灾备自助迁移</li>
             <li>模型合规证书挂载到 ModelVersion</li>
           </ul>
           <div class="skill-io-row">
@@ -1260,7 +1260,7 @@ footer {
           <div class="skill-col-label">标准版</div>
           <div class="skill-col-name">eval-benchmark/standard</div>
           <ul class="skill-list">
-            <li>多阈值 ROC，自动建议最优 threshold</li>
+            <li>多阈值 ROC，自助建议最优 threshold</li>
             <li>场景细分准召（泛色情/暴恐/广告/政治）</li>
             <li>回归 case 对比，回归率 >10% → ITERATE</li>
           </ul>
@@ -1276,7 +1276,7 @@ footer {
           <ul class="skill-list">
             <li>红线类目通过率 ≥ 0.999，强制 BLOCK</li>
             <li>标注一致性（Kappa ≥ 0.85）</li>
-            <li>合规审计报告自动生成，含测试集 hash</li>
+            <li>合规审计报告自助生成，含测试集 hash</li>
           </ul>
           <div class="skill-io-row">
             <span class="skill-io-in">ModelVersion + ComplianceSpec</span>
@@ -1358,7 +1358,7 @@ footer {
           <ul class="skill-list">
             <li>多场景 Gate 阈值（各类目独立配置）</li>
             <li>灰度梯度 5%→20%→100%，每级观察 24h</li>
-            <li>在线指标异常自动回滚</li>
+            <li>在线指标异常自助回滚</li>
           </ul>
           <div class="skill-io-row">
             <span class="skill-io-in">EvalResult + PerfReport + GateConfig</span>
@@ -1581,7 +1581,7 @@ footer {
         </div>
         <span class="plugin-lifecycle-tag">experimental</span>
       </div>
-      <p class="plugin-desc">Optuna/Bayesian 超参自动搜索。基于历史实验结果智能推荐下一组超参组合，减少 Trial 次数约 40%。</p>
+      <p class="plugin-desc">Optuna/Bayesian 超参自助搜索。基于历史实验结果智能推荐下一组超参组合，减少 Trial 次数约 40%。</p>
       <div class="plugin-tools-label">提供的 Tools</div>
       <div class="plugin-tools-list">
         <span class="plugin-tool-chip">optuna_suggest_tool</span>
@@ -1596,7 +1596,7 @@ footer {
         </div>
         <span class="plugin-lifecycle-tag">experimental</span>
       </div>
-      <p class="plugin-desc">误报/漏报案例语义聚类自动归因。对 case_diff 输出做聚类分析，自动生成归因摘要，帮助算法工程师快速定位问题。</p>
+      <p class="plugin-desc">误报/漏报案例语义聚类自助归因。对 case_diff 输出做聚类分析，自助生成归因摘要，帮助算法工程师快速定位问题。</p>
       <div class="plugin-tools-label">提供的 Tools</div>
       <div class="plugin-tools-list">
         <span class="plugin-tool-chip">case_cluster_tool</span>
@@ -1611,7 +1611,7 @@ footer {
         </div>
         <span class="plugin-lifecycle-tag">experimental</span>
       </div>
-      <p class="plugin-desc">vLLM 量化与算子融合优化。压测发现性能瓶颈后，自动尝试 INT8/INT4 量化，对比量化前后 P99 diff，给出优化建议。</p>
+      <p class="plugin-desc">vLLM 量化与算子融合优化。压测发现性能瓶颈后，自助尝试 INT8/INT4 量化，对比量化前后 P99 diff，给出优化建议。</p>
       <div class="plugin-tools-label">提供的 Tools</div>
       <div class="plugin-tools-list">
         <span class="plugin-tool-chip">vllm_quant_tool</span>
@@ -1641,7 +1641,7 @@ footer {
         </div>
         <span class="plugin-lifecycle-tag">experimental</span>
       </div>
-      <p class="plugin-desc">在线指标异常自动回滚保护。持续监控灰度期间的误报率和延迟，触发条件满足时自动调用 gray_release_submit(ratio=0) 回滚。</p>
+      <p class="plugin-desc">在线指标异常自助回滚保护。持续监控灰度期间的误报率和延迟，触发条件满足时自助调用 gray_release_submit(ratio=0) 回滚。</p>
       <div class="plugin-tools-label">提供的 Tools</div>
       <div class="plugin-tools-list">
         <span class="plugin-tool-chip">rollback_trigger_tool</span>
